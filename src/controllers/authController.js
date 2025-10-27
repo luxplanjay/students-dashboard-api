@@ -138,20 +138,24 @@ export const requestResetEmail = async (req, res, next) => {
     link: `${process.env.FRONTEND_DOMAIN}/reset-password?token=${resetToken}`,
   });
 
-  try {
-    await sendMail({
-      from: process.env.SMTP_FROM,
-      to: email,
-      subject: "Reset your password",
-      html,
-    });
-  } catch (e) {
-    console.log(e);
-    next(
-      createHttpError(500, "Failed to send the email, please try again later.")
-    );
-    return;
+  // try {
+  const { error } = await sendMail({
+    from: process.env.SMTP_FROM,
+    to: email,
+    subject: "Reset your password",
+    html,
+  });
+
+  if (error) {
+    throw createHttpError(error.statusCode, error.message);
   }
+  // } catch (e) {
+  //   console.log(e);
+  //   next(
+  //     createHttpError(500, "Failed to send the email, please try again later.")
+  //   );
+  //   return;
+  // }
 
   // Та сама "нейтральна" відповідь
   res.status(200).json({
